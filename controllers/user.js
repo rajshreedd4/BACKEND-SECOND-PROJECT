@@ -102,23 +102,111 @@ exports.getUsers = async (req, res) => {
 
 
 exports.getUserById = async (req, res) => {
-    res.json({
-        message: "Get User By ID API"
-    });
+    try {
+        const { id } = req.params;
+
+        const user = await User.findById(id)
+            .select("-password")
+            .populate({
+                path: "role",
+                select: "name description"
+            });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "User fetched successfully",
+            user
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Error fetching user",
+            error: error.message
+        });
+    }
 };
 
 
 exports.updateUser = async (req, res) => {
-    res.json({
-        message: "Update User API"
-    });
+    try {
+        const { id } = req.params;
+        const { name, email, mobileNumber, roleId } = req.body;
+
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            {
+                name,
+                email,
+                mobileNumber,
+                role: roleId
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        ).select("-password").populate({
+            path: "role",
+            select: "name description"
+        });
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "User updated successfully",
+            user: updatedUser
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Error updating user",
+            error: error.message
+        });
+    }
 };
 
 // Delete User
 exports.deleteUser = async (req, res) => {
-    res.json({
-        message: "Delete User API"
-    });
+    try {
+        const { id } = req.params;
+
+        const deletedUser = await User.findByIdAndDelete(id);
+
+        if (!deletedUser) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "User deleted successfully",
+            user: {
+                id: deletedUser._id,
+                name: deletedUser.name,
+                email: deletedUser.email
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Error deleting user",
+            error: error.message
+        });
+    }
 };
 
 exports.getAllUsers = async (req, res) => {
