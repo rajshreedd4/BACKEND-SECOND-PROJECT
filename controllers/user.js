@@ -85,10 +85,13 @@ exports.login = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({
-            message: "Internal server error"
-        });
-    }
+    console.error("Login Error:", error);
+
+    res.status(500).json({
+        message: "Internal server error",
+        error: error.message
+    });
+}
 };
 
 exports.getUsers = async (req, res) => {
